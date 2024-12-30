@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
-# Copyright (C) 2021-2022 ImmortalWrt.org
+# Copyright (C) 2021 ImmortalWrt.org
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=v2ray-core
-PKG_VERSION:=5.22.0
+PKG_VERSION:=5.23.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/v2fly/v2ray-core/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=df25a873c8f7fb30f44cb6d26b18db264dfa209df5aeb6116fc43df7157fb4b8
+PKG_HASH:=ae02fa91d2cbb1fc909bd3e7421a046319f1d8734170ff434234940bd3aa4364
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
@@ -18,6 +18,7 @@ PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
+PKG_USE_MIPS16:=0
 PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/v2fly/v2ray-core/v5
@@ -30,7 +31,7 @@ include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
 
 define Package/v2ray/template
-  TITLE:=A proxy platform to bypass network restrictions
+  TITLE:=A platform for building proxies to bypass network restrictions
   SECTION:=net
   CATEGORY:=Network
   URL:=https://www.v2fly.org
@@ -39,13 +40,6 @@ endef
 define Package/v2ray-core
   $(call Package/v2ray/template)
   DEPENDS:=$(GO_ARCH_DEPENDS) +ca-bundle
-endef
-
-define Package/v2ray-example
-  $(call Package/v2ray/template)
-  TITLE+= (example configs)
-  DEPENDS:=v2ray-core
-  PKGARCH:=all
 endef
 
 define Package/v2ray-extra
@@ -64,12 +58,6 @@ define Package/v2ray-core/description
   $(call Package/v2ray/description)
 endef
 
-define Package/v2ray-example/description
-  $(call Package/v2ray/description)
-
-  This includes example configuration files for v2ray-core.
-endef
-
 define Package/v2ray-extra/description
   $(call Package/v2ray/description)
 
@@ -77,28 +65,12 @@ define Package/v2ray-extra/description
 endef
 
 define Package/v2ray-core/conffiles
-/etc/config/v2ray
-/etc/v2ray/
 endef
 
 define Package/v2ray-core/install
 	$(call GoPackage/Package/Install/Bin,$(PKG_INSTALL_DIR))
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/main $(1)/usr/bin/v2ray
-
-	$(INSTALL_DIR) $(1)/etc/v2ray/
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/release/config/config.json $(1)/etc/v2ray/
-
-	$(INSTALL_DIR) $(1)/etc/config/
-	$(INSTALL_CONF) $(CURDIR)/files/v2ray.conf $(1)/etc/config/v2ray
-	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_BIN) $(CURDIR)/files/v2ray.init $(1)/etc/init.d/v2ray
-endef
-
-define Package/v2ray-example/install
-	$(INSTALL_DIR) $(1)/etc/v2ray/
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/release/config/vpoint_socks_vmess.json $(1)/etc/v2ray/
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/release/config/vpoint_vmess_freedom.json $(1)/etc/v2ray/
 endef
 
 define Package/v2ray-extra/install
@@ -107,5 +79,4 @@ define Package/v2ray-extra/install
 endef
 
 $(eval $(call BuildPackage,v2ray-core))
-$(eval $(call BuildPackage,v2ray-example))
 $(eval $(call BuildPackage,v2ray-extra))
